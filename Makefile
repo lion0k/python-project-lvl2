@@ -1,5 +1,5 @@
 gendiff:
-		poetry run gendiff
+		poetry run gendiff $(arg)
 
 build:
 		poetry build
@@ -15,3 +15,5 @@ publish:
 
 package-install:
 		pip install --user dist/*.whl
+
+.PHONY: gendiff
