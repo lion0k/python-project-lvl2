@@ -7,4 +7,4 @@ __pycache__/
 .python-version
 hexlet_git_python
 hexlet_git_python.pub
-
+*.json
