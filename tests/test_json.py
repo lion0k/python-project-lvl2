@@ -30,8 +30,8 @@ def get_file_absolute_path(filename: str) -> str:
 def test_flat_json():
     """Check json files."""
     with open(get_file_absolute_path('json_result')) as file_result:
-        diff_result_data = file_result.read()
-        assert generate_diff(
-            get_file_absolute_path('file1.json'),
-            get_file_absolute_path('file2.json'),
-        ) == diff_result_data
+        expected = file_result.read()
+    assert generate_diff(
+        get_file_absolute_path('file1.json'),
+        get_file_absolute_path('file2.json'),
+    ) == expected
