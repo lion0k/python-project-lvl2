@@ -25,3 +25,21 @@ jobs:
       - name: Run linter and pytest
         run: |
           make check
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - run: |
+          pip install poetry
+          make install
+      - uses: paambaati/codeclimate-action@v2.7.5
+        env:
+          CC_TEST_REPORTER_ID: 03f4da334397ad2b9d6a9e0965a948e2cd0c7a75566cad0d69315c79ab9f6d67
+        with:
+          coverageCommand: make test-coverage
+                      
+    
