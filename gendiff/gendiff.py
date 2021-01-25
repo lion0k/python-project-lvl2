@@ -2,9 +2,9 @@
 
 from gendiff.engine import read_file
 
-INDENT_NOT_CHANGE = '     '
-INDENT_ADD = '   + '
-INDENT_REMOVE = '   - '
+INDENT_NOT_CHANGE = '    '
+INDENT_ADD = '  + '
+INDENT_REMOVE = '  - '
 
 
 def format_result(indent: str, key, data_by_key) -> str:
@@ -76,7 +76,7 @@ def generate_diff(first_file: str, second_file: str) -> str:
         diff_result.extend(get_changes_by_key(key, file1, file2))
 
     return '{indent_start}{diff_result}{indent_finish}'.format(
-        indent_start=' {\n',
+        indent_start='{\n',
         diff_result='\n'.join(diff_result),
-        indent_finish='\n }',
+        indent_finish='\n}',
     )
