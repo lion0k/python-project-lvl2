@@ -20,6 +20,6 @@ def read_file(path_to_file: str) -> dict:
     if file_extension == 'json':
         with open(path_to_file) as file_descriptor_json:
             return json.load(file_descriptor_json)
-    elif file_extension == 'yaml':
+    elif file_extension in ('yml', 'yaml'):
         with open(path_to_file) as file_descriptor_yaml:
             return yaml.safe_load(file_descriptor_yaml)
