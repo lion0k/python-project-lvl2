@@ -28,10 +28,20 @@ def get_file_absolute_path(filename: str) -> str:
 
 
 def test_flat_json():
-    """Check json files."""
-    with open(get_file_absolute_path('json_result')) as file_result:
+    """Check flat json files."""
+    with open(get_file_absolute_path('flat_diff_result')) as file_result:
         expected = file_result.read()
     assert generate_diff(
         get_file_absolute_path('file1.json'),
         get_file_absolute_path('file2.json'),
+    ) == expected
+
+
+def test_flat_yaml():
+    """Check flat yaml files."""
+    with open(get_file_absolute_path('flat_diff_result')) as file_result:
+        expected = file_result.read()
+    assert generate_diff(
+        get_file_absolute_path('file1.yaml'),
+        get_file_absolute_path('file2.yaml'),
     ) == expected
