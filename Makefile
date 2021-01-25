@@ -1,19 +1,18 @@
-gendiff:
-		poetry run gendiff file1.json file2.json
-
-build:
-		poetry build
-
 install:
-		poetry install
+	poetry install
+
+test:
+	poetry run pytest tests
 
 lint:
-		poetry run flake8 gendiff
+	poetry run flake8 gendiff
 
-publish:
-		poetry publish --dry-run
+selfcheck:
+	poetry check
 
-package-install:
-		pip install --user dist/*.whl
+check: selfcheck test lint
+
+build: check
+	poetry build
 
 .PHONY: gendiff
