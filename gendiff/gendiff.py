@@ -1,82 +1,86 @@
 """Generate difference."""
 
-from gendiff.engine import read_file
+from gendiff.engine import converting, read_file
+from gendiff.markers import MARK_ADD, MARK_IDENTICAL, MARK_REMOVE
+from gendiff.views.view import view
 
-INDENT_NOT_CHANGE = '    '
-INDENT_ADD = '  + '
-INDENT_REMOVE = '  - '
-
-
-def format_result(indent: str, key, data_by_key) -> str:
-    """
-    Format result.
-
-    Args:
-        indent: indent
-        key: key
-        data_by_key: data by key
-
-    Returns:
-         str
-    """
-    return '{indent}{key}: {value}'.format(
-        indent=indent,
-        key=str(key),
-        value=str(data_by_key),
-    )
+DEFAULT_OBJECT_IN_PYTHON = (True, False, None)
 
 
-def get_changes_by_key(key, data1: dict, data2: dict) -> list:
-    """
-    Get data changes by key.
-
-    Args:
-        key: data search by key
-        data1: data for comparison
-        data2: data for comparison
-
-    Returns:
-         list:
-    """
-    changes = []
-    value_data1 = data1.get(key, None)
-    value_data2 = data2.get(key, None)
-    if (key in data1) and (key in data2):
-        if value_data1 == value_data2:
-            changes.append(format_result(INDENT_NOT_CHANGE, key, value_data1))
-        else:
-            changes.append(format_result(INDENT_REMOVE, key, value_data1))
-            changes.append(format_result(INDENT_ADD, key, value_data2))
-    elif key in data2:
-        changes.append(format_result(INDENT_ADD, key, value_data2))
-    else:
-        changes.append(format_result(INDENT_REMOVE, key, value_data1))
-    return changes
-
-
-def generate_diff(first_file: str, second_file: str) -> str:
+def generate_diff(first_file: str, second_file: str, formatter='stylish'):
     """
     Generate difference.
 
     Args:
         first_file: first file
         second_file: second file
+        formatter: output style view
 
     Returns:
-         str:
+        str:
     """
-    file1 = read_file(first_file)
-    file2 = read_file(second_file)
+    old_data = read_file(first_file)
+    new_data = read_file(second_file)
+    diff = find_difference(old_data, new_data)
+    return view(formatter)(diff)
 
-    union_keys = set(file1.keys())
-    union_keys.update(file2.keys())
 
-    diff_result = []
-    for key in sorted(union_keys):
-        diff_result.extend(get_changes_by_key(key, file1, file2))
+def get_data_by_key(node_key, node):
+    """
+    Get data by node key.
 
-    return '{indent_start}{diff_result}{indent_finish}'.format(
-        indent_start='{\n',
-        diff_result='\n'.join(diff_result),
-        indent_finish='\n}',
-    )
+    Args:
+        node_key: possible key in node
+        node: node
+
+    Returns:
+        any: value by node or None
+    """
+    if node_key in node:
+        value_by_key = node.get(node_key)
+        if value_by_key in DEFAULT_OBJECT_IN_PYTHON:
+            return converting(value_by_key)
+        return value_by_key
+
+
+def set_marker_by_key(node_key, old_data, new_data) -> tuple:
+    """
+    Set data change marking.
+
+    Args:
+        node_key: key node
+        old_data: data before
+        new_data: new data
+
+    Returns:
+        tuple: tuple(mark changes, data)
+    """
+    value_old_data = get_data_by_key(node_key, old_data)
+    value_new_data = get_data_by_key(node_key, new_data)
+    if value_old_data == value_new_data:
+        return (MARK_IDENTICAL, value_old_data),
+    elif value_old_data is None:
+        return (MARK_ADD, value_new_data),
+    elif value_new_data is None:
+        return (MARK_REMOVE, value_old_data),
+    elif isinstance(value_old_data, dict) and isinstance(value_new_data, dict):
+        return find_difference(value_old_data, value_new_data)
+    return (MARK_REMOVE, value_old_data), (MARK_ADD, value_new_data),
+
+
+def find_difference(old_data, new_data) -> dict:
+    """
+    Find difference and create difference structure.
+
+    Args:
+        old_data: first file
+        new_data: second file
+
+    Returns:
+        dict:
+    """
+    diff_result = {}
+    union_keys = old_data.keys() | new_data.keys()
+    for key in union_keys:
+        diff_result[key] = set_marker_by_key(key, old_data, new_data)
+    return diff_result

@@ -19,7 +19,7 @@ def get_file_absolute_path(filename: str) -> str:
         filename: file name
 
     Returns:
-         str:
+        str:
     """
     return '{abs_path}{filename}'.format(
         abs_path=ABSOLUTE_PATH_FIXTURE_DIR,
@@ -44,4 +44,24 @@ def test_flat_yaml():
     assert generate_diff(
         get_file_absolute_path('file1.yaml'),
         get_file_absolute_path('file2.yaml'),
+    ) == expected
+
+
+def test_ast_json():
+    """Check ast json files."""
+    with open(get_file_absolute_path('ast_diff_result')) as file_result:
+        expected = file_result.read()
+    assert generate_diff(
+        get_file_absolute_path('file1_ast.json'),
+        get_file_absolute_path('file2_ast.json'),
+    ) == expected
+
+
+def test_ast_yaml():
+    """Check ast yaml files."""
+    with open(get_file_absolute_path('ast_diff_result')) as file_result:
+        expected = file_result.read()
+    assert generate_diff(
+        get_file_absolute_path('file1_ast.yaml'),
+        get_file_absolute_path('file2_ast.yaml'),
     ) == expected
