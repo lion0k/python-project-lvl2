@@ -27,41 +27,49 @@ def get_file_absolute_path(filename: str) -> str:
     )
 
 
-def test_flat_json():
-    """Check flat json files."""
+def test_stylish_format_flat_files():
+    """Check flat json/yaml files."""
     with open(get_file_absolute_path('flat_diff_result')) as file_result:
         expected = file_result.read()
     assert generate_diff(
         get_file_absolute_path('file1.json'),
         get_file_absolute_path('file2.json'),
+        formatter='stylish'
     ) == expected
-
-
-def test_flat_yaml():
-    """Check flat yaml files."""
-    with open(get_file_absolute_path('flat_diff_result')) as file_result:
-        expected = file_result.read()
     assert generate_diff(
         get_file_absolute_path('file1.yaml'),
         get_file_absolute_path('file2.yaml'),
+        formatter='stylish'
     ) == expected
 
 
-def test_ast_json():
-    """Check ast json files."""
-    with open(get_file_absolute_path('ast_diff_result')) as file_result:
+def test_stylish_format_ast_files():
+    """Check stylish format json/yaml files."""
+    with open(get_file_absolute_path('stylish_diff_result')) as file_result:
         expected = file_result.read()
     assert generate_diff(
         get_file_absolute_path('file1_ast.json'),
         get_file_absolute_path('file2_ast.json'),
+        formatter='stylish'
     ) == expected
-
-
-def test_ast_yaml():
-    """Check ast yaml files."""
-    with open(get_file_absolute_path('ast_diff_result')) as file_result:
-        expected = file_result.read()
     assert generate_diff(
         get_file_absolute_path('file1_ast.yaml'),
         get_file_absolute_path('file2_ast.yaml'),
+        formatter='stylish'
+    ) == expected
+
+
+def test_plain_format_ast_files():
+    """Check plain format json/yaml files."""
+    with open(get_file_absolute_path('plain_diff_result')) as file_result:
+        expected = file_result.read()
+    assert generate_diff(
+        get_file_absolute_path('file1_ast.json'),
+        get_file_absolute_path('file2_ast.json'),
+        formatter='plain',
+    ) == expected
+    assert generate_diff(
+        get_file_absolute_path('file1_ast.yaml'),
+        get_file_absolute_path('file2_ast.yaml'),
+        formatter='plain',
     ) == expected

@@ -1,5 +1,6 @@
 """View format styles."""
 
+from gendiff.views.plain import plain
 from gendiff.views.stylish import stylish
 
 
@@ -15,3 +16,5 @@ def view(view_format: str):
     """
     if view_format == 'stylish':
         return stylish
+    elif view_format == 'plain':
+        return plain
