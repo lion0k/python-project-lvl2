@@ -73,3 +73,19 @@ def test_plain_format_ast_files():
         get_file_absolute_path('file2_ast.yaml'),
         formatter='plain',
     ) == expected
+
+
+def test_json_format_ast_files():
+    """Check json format json/yaml files."""
+    with open(get_file_absolute_path('json_diff_result')) as file_result:
+        expected = file_result.read()
+    assert generate_diff(
+        get_file_absolute_path('file1_ast.json'),
+        get_file_absolute_path('file2_ast.json'),
+        formatter='json',
+    ) == expected
+    assert generate_diff(
+        get_file_absolute_path('file1_ast.yaml'),
+        get_file_absolute_path('file2_ast.yaml'),
+        formatter='json',
+    ) == expected

@@ -27,14 +27,15 @@ def read_file(path_to_file: str) -> dict:
             return yaml.safe_load(file_descriptor_yaml)
 
 
-def converting(python_object) -> str:
+def converting(python_object, **kwargs) -> str:
     """
     Convert in json object.
 
     Args:
         python_object: default python object
+        kwargs: possible arguments
 
     Returns:
         str:
     """
-    return json.dumps(python_object)
+    return json.dumps(python_object, **kwargs)

@@ -17,8 +17,8 @@ def main():
         '--format',
         type=str,
         default='stylish',
-        choices=['stylish', 'plain'],
-        help='set format of output (supports only stylish, plain)',
+        choices=['stylish', 'plain', 'json'],
+        help='set format of output (supports only stylish, plain, json)',
     )
     args = parser.parse_args()
     print(generate_diff(args.first_file, args.second_file, args.format))
