@@ -4,8 +4,6 @@ from gendiff.engine import converting, read_file
 from gendiff.markers import MARK_ADD, MARK_IDENTICAL, MARK_REMOVE
 from gendiff.views.view import view
 
-DEFAULT_OBJECT_IN_PYTHON = (True, False, None)
-
 
 def generate_diff(first_file: str, second_file: str, formatter='stylish'):
     """
@@ -38,7 +36,7 @@ def get_data_by_key(node_key, node):
     """
     if node_key in node:
         value_by_key = node.get(node_key)
-        if value_by_key in DEFAULT_OBJECT_IN_PYTHON:
+        if isinstance(value_by_key, bool) or value_by_key is None:
             return converting(value_by_key)
         return value_by_key
 

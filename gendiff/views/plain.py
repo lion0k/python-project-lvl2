@@ -111,7 +111,7 @@ def modify_values(node_data) -> str:
     """
     if is_complex(node_data):
         return COMPLEX_VALUE
-    elif node_data not in OBJECT_IN_JSON:
+    elif node_data not in OBJECT_IN_JSON and isinstance(node_data, str):
         return "'{data}'".format(data=node_data)
     return node_data
 
