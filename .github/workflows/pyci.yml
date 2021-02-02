@@ -40,6 +40,6 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: 03f4da334397ad2b9d6a9e0965a948e2cd0c7a75566cad0d69315c79ab9f6d67
         with:
-          coverageCommand: make json_diff_result-coverage
+          coverageCommand: make test-coverage
                       
     
