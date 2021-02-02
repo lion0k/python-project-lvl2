@@ -7,7 +7,7 @@ from gendiff.views.view import view
 DEFAULT_OBJECT_IN_PYTHON = (True, False, None)
 
 
-def generate_diff(first_file: str, second_file: str, formatter: str):
+def generate_diff(first_file: str, second_file: str, formatter='stylish'):
     """
     Generate difference.
 
