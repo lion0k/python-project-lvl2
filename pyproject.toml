@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "hexlet-code"
 version = "0.1.0"
-description = "Project Generate Diffirence on www.hexlet.io"
+description = "Project Generate Difference on www.hexlet.io"
 authors = ["li0n0k <li0n0m0nk@gmail.com>"]
 packages = [
   { include = "gendiff" },
