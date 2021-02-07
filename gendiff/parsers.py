@@ -1,4 +1,4 @@
-"""Helper engine scripts."""
+"""Parsing files."""
 
 import json
 from os.path import splitext
@@ -8,9 +8,9 @@ import yaml
 YAML_EXTENSION = 'yml', 'yaml'
 
 
-def read_file(path_to_file: str) -> dict:
+def parse_file(path_to_file: str) -> dict:
     """
-    Read file data.
+    Read and parse file data.
 
     Args:
         path_to_file: path to file
@@ -25,17 +25,3 @@ def read_file(path_to_file: str) -> dict:
     elif file_extension in YAML_EXTENSION:
         with open(path_to_file) as file_descriptor_yaml:
             return yaml.safe_load(file_descriptor_yaml)
-
-
-def converting(python_object, **kwargs) -> str:
-    """
-    Convert in json object.
-
-    Args:
-        python_object: default python object
-        kwargs: possible arguments
-
-    Returns:
-        str:
-    """
-    return json.dumps(python_object, **kwargs)

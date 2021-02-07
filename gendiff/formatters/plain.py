@@ -4,9 +4,9 @@ from gendiff.markers import MARK_ADD, MARK_IDENTICAL
 
 COMPLEX_VALUE = '[complex value]'
 OBJECT_IN_JSON = ('true', 'false', 'null')
-PROPERTY_ADDED = "Property '{}' was added with value: {}"
-PROPERTY_REMOVED = "Property '{}' was removed"
-PROPERTY_UPDATED = "Property '{}' was updated. From {} to {}"
+PROPERTY_ADDED = "Property '{path}' was added with value: {add}"
+PROPERTY_REMOVED = "Property '{path}' was removed"
+PROPERTY_UPDATED = "Property '{path}' was updated. From {remove} to {add}"
 
 
 def plain(diff: dict) -> str:
@@ -68,18 +68,17 @@ def format_result(node_key: str, node_data, path: str) -> str:
             removed_value = changes_data
     if added_value is not None and removed_value is not None:
         return PROPERTY_UPDATED.format(
-            add_path(node_key, path),
-            modify_values(removed_value),
-            modify_values(added_value),
+            path=add_path(node_key, path),
+            remove=modify_values(removed_value),
+            add=modify_values(added_value),
         )
     elif added_value is not None:
         return PROPERTY_ADDED.format(
-            add_path(node_key, path),
-            modify_values(added_value),
+            path=add_path(node_key, path),
+            add=modify_values(added_value),
         )
     return PROPERTY_REMOVED.format(
-        add_path(node_key, path),
-        modify_values(removed_value),
+        path=add_path(node_key, path),
     )
 
 

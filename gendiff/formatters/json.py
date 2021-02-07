@@ -1,9 +1,9 @@
 """Json format."""
 
-from gendiff.engine import converting
+import json
 
 
-def json(diff: dict) -> str:
+def json_view(diff: dict) -> str:
     """
     View style.
 
@@ -13,4 +13,4 @@ def json(diff: dict) -> str:
     Returns:
         str:
     """
-    return converting(diff, sort_keys=True, indent=4)
+    return json.dumps(diff, sort_keys=True, indent=4)

@@ -1,11 +1,11 @@
 """View format styles."""
 
-from gendiff.views.json import json
-from gendiff.views.plain import plain
-from gendiff.views.stylish import stylish
+from gendiff.formatters.json import json_view
+from gendiff.formatters.plain import plain
+from gendiff.formatters.stylish import stylish
 
 
-def view(view_format: str):
+def output(view_format: str):
     """
     Output views function.
 
@@ -20,4 +20,4 @@ def view(view_format: str):
     elif view_format == 'plain':
         return plain
     elif view_format == 'json':
-        return json
+        return json_view

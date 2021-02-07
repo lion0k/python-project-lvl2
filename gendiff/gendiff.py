@@ -1,8 +1,10 @@
 """Generate difference."""
 
-from gendiff.engine import converting, read_file
+import json
+
+from gendiff.formatters.output import output
 from gendiff.markers import MARK_ADD, MARK_IDENTICAL, MARK_REMOVE
-from gendiff.views.view import view
+from gendiff.parsers import parse_file
 
 
 def generate_diff(first_file: str, second_file: str, formatter='stylish'):
@@ -17,10 +19,10 @@ def generate_diff(first_file: str, second_file: str, formatter='stylish'):
     Returns:
         str:
     """
-    old_data = read_file(first_file)
-    new_data = read_file(second_file)
+    old_data = parse_file(first_file)
+    new_data = parse_file(second_file)
     diff = find_difference(old_data, new_data)
-    return view(formatter)(diff)
+    return output(formatter)(diff)
 
 
 def get_data_by_key(node_key, node):
@@ -37,7 +39,7 @@ def get_data_by_key(node_key, node):
     if node_key in node:
         value_by_key = node.get(node_key)
         if isinstance(value_by_key, bool) or value_by_key is None:
-            return converting(value_by_key)
+            return json.dumps(value_by_key)
         return value_by_key
 
 

@@ -9,6 +9,7 @@ INDENT_REMOVE = '  - '
 
 MARKS = MARK_ADD, MARK_IDENTICAL, MARK_REMOVE
 INDENTS = INDENT_ADD, INDENT_NOT_CHANGE, INDENT_REMOVE
+MARK_ADD_AND_REMOVE = MARK_ADD, MARK_REMOVE
 
 
 def stylish(diff: dict) -> str:
@@ -76,7 +77,7 @@ def ast_walk(node: dict, deep_indent=0) -> list:
                     is_children,
                 )
                 if is_children:
-                    if mark in (MARK_ADD, MARK_REMOVE):
+                    if mark in MARK_ADD_AND_REMOVE:
                         quote_in = format_result(
                             count_indent - 1,
                             '{',
@@ -117,27 +118,27 @@ def ast_walk(node: dict, deep_indent=0) -> list:
     return output
 
 
-def format_result(count_indent: int, item, node_key='', indent_spec='') -> str:
+def format_result(count_indent: int, element, node='', indent_spec='') -> str:
     """
     Format result.
 
     Args:
         count_indent: number of indents
-        item: value by node
-        node_key: name node key
+        element: value by node
+        node: name node key
         indent_spec: special indent show how data changes
 
     Returns:
         str:
     """
-    if node_key:
-        return '{indent}{indent_spec}{key}: {item}'.format(
+    if node:
+        return '{indent}{indent_spec}{node}: {element}'.format(
             indent=INDENT * count_indent,
             indent_spec=indent_spec,
-            key=node_key,
-            item=item,
+            node=node,
+            element=element,
         )
-    return '{indent}{item}'.format(
+    return '{indent}{element}'.format(
         indent=INDENT * count_indent,
-        item=item,
+        element=element,
     )
