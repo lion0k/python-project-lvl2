@@ -52,15 +52,17 @@ def test_file_is_empty():
             )
 
 
-@pytest.mark.parametrize('before, after, formatter, diff', [
-    ('file1.json', 'file2.json', 'stylish', 'flat_diff_result'),
-    ('file1_ast.json', 'file2_ast.json', 'stylish', 'stylish_diff_result'),
-    ('file1_ast.yaml', 'file2_ast.yaml', 'stylish', 'stylish_diff_result'),
-    ('file1_ast.json', 'file2_ast.json', 'plain', 'plain_diff_result'),
-    ('file1_ast.yaml', 'file2_ast.yaml', 'plain', 'plain_diff_result'),
-    ('file1_ast.json', 'file2_ast.json', 'json', 'json_diff_result'),
-    ('file1_ast.yaml', 'file2_ast.yaml', 'json', 'json_diff_result'),
-    ])
+@pytest.mark.parametrize(
+    'before, after, formatter, diff', [
+        ('file1.json', 'file2.json', 'stylish', 'flat_diff_result'),
+        ('file1_ast.json', 'file2_ast.json', 'stylish', 'stylish_diff_result'),
+        ('file1_ast.yaml', 'file2_ast.yaml', 'stylish', 'stylish_diff_result'),
+        ('file1_ast.json', 'file2_ast.json', 'plain', 'plain_diff_result'),
+        ('file1_ast.yaml', 'file2_ast.yaml', 'plain', 'plain_diff_result'),
+        ('file1_ast.json', 'file2_ast.json', 'json', 'json_diff_result'),
+        ('file1_ast.yaml', 'file2_ast.yaml', 'json', 'json_diff_result'),
+    ],
+)
 def test_generate_diff(before, after, formatter, diff):
     """
     Check generate_diff.
