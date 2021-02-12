@@ -1,86 +1,72 @@
 """Generate difference."""
 
-import json
+from os.path import splitext
 
-from gendiff.formatters.output import output
-from gendiff.markers import MARK_ADD, MARK_IDENTICAL, MARK_REMOVE
-from gendiff.parsers import parse_file
+from gendiff.diff import build_difference
+from gendiff.formatter import formatter
+from gendiff.parsers import parse_data
 
 
-def generate_diff(first_file: str, second_file: str, formatter='stylish'):
+def read_file(path_to_file):
+    """
+    Read file.
+
+    Args:
+        path_to_file: path to file
+
+    Raises:
+        ValueError: then file is empty
+        FileNotFoundError: file not found
+        IOError: can`t read the file
+
+    Returns:
+        any: data from file
+    """
+    try:
+        with open(path_to_file) as file_descriptor:
+            file_data = file_descriptor.read()
+            if not file_data:
+                raise ValueError("'{file}' is empty!".format(file=path_to_file))
+            return file_data
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            "File '{file}' not found!".format(file=path_to_file),
+        )
+
+
+def get_file_extension(file_name: str) -> str:
+    """
+    Get file extension.
+
+    Args:
+        file_name: file name
+
+    Returns:
+        str:
+    """
+    return splitext(file_name)[1][1:]
+
+
+def generate_diff(first_file: str, second_file: str, output_format='stylish'):
     """
     Generate difference.
 
     Args:
         first_file: first file
         second_file: second file
-        formatter: output style view
+        output_format: output style format
 
     Returns:
         str:
     """
-    old_data = parse_file(first_file)
-    new_data = parse_file(second_file)
-    diff = find_difference(old_data, new_data)
-    return output(formatter)(diff)
+    old_data = parse_data(
+        read_file(first_file),
+        get_file_extension(first_file),
+    )
+    new_data = parse_data(
+        read_file(second_file),
+        get_file_extension(second_file),
+    )
 
-
-def get_data_by_key(node_key, node):
-    """
-    Get data by node key.
-
-    Args:
-        node_key: possible key in node
-        node: node
-
-    Returns:
-        any: value by node or None
-    """
-    if node_key in node:
-        value_by_key = node.get(node_key)
-        if isinstance(value_by_key, bool) or value_by_key is None:
-            return json.dumps(value_by_key)
-        return value_by_key
-
-
-def set_marker_by_key(node_key, old_data, new_data) -> tuple:
-    """
-    Set data change marking.
-
-    Args:
-        node_key: key node
-        old_data: data before
-        new_data: new data
-
-    Returns:
-        tuple: tuple(mark changes, data)
-    """
-    value_old_data = get_data_by_key(node_key, old_data)
-    value_new_data = get_data_by_key(node_key, new_data)
-    if value_old_data == value_new_data:
-        return (MARK_IDENTICAL, value_old_data),
-    elif value_old_data is None:
-        return (MARK_ADD, value_new_data),
-    elif value_new_data is None:
-        return (MARK_REMOVE, value_old_data),
-    elif isinstance(value_old_data, dict) and isinstance(value_new_data, dict):
-        return find_difference(value_old_data, value_new_data)
-    return (MARK_REMOVE, value_old_data), (MARK_ADD, value_new_data),
-
-
-def find_difference(old_data, new_data) -> dict:
-    """
-    Find difference and create difference structure.
-
-    Args:
-        old_data: first file
-        new_data: second file
-
-    Returns:
-        dict:
-    """
-    diff_result = {}
-    union_keys = old_data.keys() | new_data.keys()
-    for key in union_keys:
-        diff_result[key] = set_marker_by_key(key, old_data, new_data)
-    return diff_result
+    diff = build_difference(old_data, new_data)
+    return formatter(output_format)(diff)

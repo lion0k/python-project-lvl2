@@ -3,7 +3,7 @@
 import json
 
 
-def json_view(diff: dict) -> str:
+def json_formatter(diff: dict) -> str:
     """
     View style.
 

@@ -1,8 +1,11 @@
-"""Test json files."""
+"""Test diff."""
+
+import pytest
 
 from os.path import abspath, dirname, sep
 
 from gendiff import generate_diff
+from gendiff.gendiff import read_file
 
 ABSOLUTE_PATH_FIXTURE_DIR = '{abs_path}{sep}{dir_fixtures}{sep}'.format(
     abs_path=abspath(dirname(__file__)),
@@ -27,65 +30,38 @@ def get_file_absolute_path(filename: str) -> str:
     )
 
 
-def test_stylish_format_flat_files():
-    """Check flat json/yaml files."""
-    with open(get_file_absolute_path('flat_diff_result')) as file_result:
-        expected = file_result.read()
-    assert generate_diff(
-        get_file_absolute_path('file1.json'),
-        get_file_absolute_path('file2.json'),
-        formatter='stylish'
-    ) == expected
-    assert generate_diff(
-        get_file_absolute_path('file1.yaml'),
-        get_file_absolute_path('file2.yaml'),
-        formatter='stylish'
-    ) == expected
+def test_file_not_found():
+    """Check get exception file not found."""
+    file_name = 'not_exist_file'
+    with pytest.raises(FileNotFoundError) as exc:
+        read_file(file_name)
+    assert str(exc.value) == "File '{file}' not found!".format(file=file_name)
 
 
-def test_stylish_format_ast_files():
-    """Check stylish format json/yaml files."""
-    with open(get_file_absolute_path('stylish_diff_result')) as file_result:
-        expected = file_result.read()
-    assert generate_diff(
-        get_file_absolute_path('file1_ast.json'),
-        get_file_absolute_path('file2_ast.json'),
-        formatter='stylish'
-    ) == expected
-    assert generate_diff(
-        get_file_absolute_path('file1_ast.yaml'),
-        get_file_absolute_path('file2_ast.yaml'),
-        formatter='stylish'
-    ) == expected
+def test_file_is_empty():
+    """Check get exception file is empty."""
+    file_name = 'empty_file'
+    abs_path_to_file = get_file_absolute_path(file_name)
+    with open(abs_path_to_file, 'w'):
+        with pytest.raises(ValueError) as exc:
+            read_file(abs_path_to_file)
+        assert str(exc.value) == "'{file}' is empty!".format(file=abs_path_to_file)
 
 
-def test_plain_format_ast_files():
-    """Check plain format json/yaml files."""
-    with open(get_file_absolute_path('plain_diff_result')) as file_result:
-        expected = file_result.read()
+@pytest.mark.parametrize("before, after, formatter, diff", [
+    ('file1.json', 'file2.json', 'stylish', 'flat_diff_result'),
+    ('file1_ast.json', 'file2_ast.json', 'stylish', 'stylish_diff_result'),
+    ('file1_ast.yaml', 'file2_ast.yaml', 'stylish', 'stylish_diff_result'),
+    ('file1_ast.json', 'file2_ast.json', 'plain', 'plain_diff_result'),
+    ('file1_ast.yaml', 'file2_ast.yaml', 'plain', 'plain_diff_result'),
+    ('file1_ast.json', 'file2_ast.json', 'json', 'json_diff_result'),
+    ('file1_ast.yaml', 'file2_ast.yaml', 'json', 'json_diff_result'),
+    ])
+def test_generate_diff(before, after, formatter, diff):
+    """Check generate_diff."""
+    expected = read_file(get_file_absolute_path(diff))
     assert generate_diff(
-        get_file_absolute_path('file1_ast.json'),
-        get_file_absolute_path('file2_ast.json'),
-        formatter='plain',
-    ) == expected
-    assert generate_diff(
-        get_file_absolute_path('file1_ast.yaml'),
-        get_file_absolute_path('file2_ast.yaml'),
-        formatter='plain',
-    ) == expected
-
-
-def test_json_format_ast_files():
-    """Check json format json/yaml files."""
-    with open(get_file_absolute_path('json_diff_result')) as file_result:
-        expected = file_result.read()
-    assert generate_diff(
-        get_file_absolute_path('file1_ast.json'),
-        get_file_absolute_path('file2_ast.json'),
-        formatter='json',
-    ) == expected
-    assert generate_diff(
-        get_file_absolute_path('file1_ast.yaml'),
-        get_file_absolute_path('file2_ast.yaml'),
-        formatter='json',
+        get_file_absolute_path(before),
+        get_file_absolute_path(after),
+        output_format=formatter
     ) == expected

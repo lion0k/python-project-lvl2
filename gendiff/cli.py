@@ -3,12 +3,12 @@
 import argparse
 
 
-def get_input_params():
+def get_input_params() -> dict:
     """
     Get input params.
 
     Returns:
-        namespace: class Namespace with input arguments
+        dict: dictionary with input arguments
     """
     parser = argparse.ArgumentParser(description='Generate diff')
     parser.add_argument('first_file', type=str, help='First file')
@@ -21,4 +21,4 @@ def get_input_params():
         choices=['stylish', 'plain', 'json'],
         help='set format of output (supports only stylish, plain, json)',
     )
-    return parser.parse_args()
+    return vars(parser.parse_args())

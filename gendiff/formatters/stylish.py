@@ -1,6 +1,6 @@
 """Stylish format."""
 
-from gendiff.markers import MARK_ADD, MARK_IDENTICAL, MARK_REMOVE
+from gendiff.diff import MARK_ADD, MARK_IDENTICAL, MARK_REMOVE
 
 INDENT = '    '
 INDENT_NOT_CHANGE = '    '

@@ -7,13 +7,15 @@ from gendiff.cli import get_input_params
 
 
 def main():
-    """Do main loop."""
+    """Start CLI-program gendiff."""
     args = get_input_params()
-    print(generate_diff(
-        first_file=args.first_file,
-        second_file=args.second_file,
-        formatter=args.format,
-    ))
+    diff = generate_diff(
+        first_file=args['first_file'],
+        second_file=args['second_file'],
+        output_format=args['format'],
+    )
+
+    print(diff)
 
 
 if __name__ == '__main__':

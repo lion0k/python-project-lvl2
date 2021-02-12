@@ -1,27 +1,24 @@
-"""Parsing files."""
+"""Parsing data."""
 
 import json
-from os.path import splitext
 
 import yaml
 
 YAML_EXTENSION = 'yml', 'yaml'
 
 
-def parse_file(path_to_file: str) -> dict:
+def parse_data(stream, parser: str) -> dict:
     """
-    Read and parse file data.
+    Parse data.
 
     Args:
-        path_to_file: path to file
+        stream: data
+        parser: type of parser
 
     Returns:
-        dict
+        dict:
     """
-    file_extension = splitext(path_to_file)[1][1:]
-    if file_extension == 'json':
-        with open(path_to_file) as file_descriptor_json:
-            return json.load(file_descriptor_json)
-    elif file_extension in YAML_EXTENSION:
-        with open(path_to_file) as file_descriptor_yaml:
-            return yaml.safe_load(file_descriptor_yaml)
+    if parser == 'json':
+        return json.loads(stream)
+    elif parser in YAML_EXTENSION:
+        return yaml.safe_load(stream)

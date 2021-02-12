@@ -1,6 +1,6 @@
 """Plain format."""
 
-from gendiff.markers import MARK_ADD, MARK_IDENTICAL
+from gendiff.diff import MARK_ADD, MARK_IDENTICAL
 
 COMPLEX_VALUE = '[complex value]'
 OBJECT_IN_JSON = ('true', 'false', 'null')
