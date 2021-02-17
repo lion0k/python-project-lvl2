@@ -53,7 +53,7 @@ def test_file_is_empty():
 
 
 @pytest.mark.parametrize(
-    'before, after, formatter, diff', [
+    'before, after, formatter, expected_result', [
         ('file1.json', 'file2.json', 'stylish', 'flat_diff_result'),
         ('file1_ast.json', 'file2_ast.json', 'stylish', 'stylish_diff_result'),
         ('file1_ast.yaml', 'file2_ast.yaml', 'stylish', 'stylish_diff_result'),
@@ -63,7 +63,7 @@ def test_file_is_empty():
         ('file1_ast.yaml', 'file2_ast.yaml', 'json', 'json_diff_result'),
     ],
 )
-def test_generate_diff(before, after, formatter, diff):
+def test_generate_diff(before, after, formatter, expected_result):
     """
     Check generate_diff.
 
@@ -71,11 +71,12 @@ def test_generate_diff(before, after, formatter, diff):
         before: file1
         after:  file2
         formatter: type formatter
-        diff: expected result
+        expected_result: expected result
     """
-    expected = read_file(get_file_absolute_path(diff))
-    assert generate_diff(
-        get_file_absolute_path(before),
-        get_file_absolute_path(after),
-        output_format=formatter,
-    ) == expected
+    with open(get_file_absolute_path(expected_result)) as file_descriptor:
+        expected = file_descriptor.read()
+        assert generate_diff(
+            get_file_absolute_path(before),
+            get_file_absolute_path(after),
+            output_format=formatter,
+        ) == expected

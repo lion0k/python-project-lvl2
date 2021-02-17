@@ -1,6 +1,14 @@
 """Plain format."""
 
-from gendiff.diff import MARK_ADD, MARK_IDENTICAL
+from gendiff.diff import (
+    MARK_ADD,
+    MARK_IDENTICAL,
+    MARK_UPDATE,
+    get_key,
+    get_state_node,
+    get_value,
+    is_children_exist,
+)
 
 COMPLEX_VALUE = '[complex value]'
 OBJECT_IN_JSON = ('true', 'false', 'null')
@@ -9,7 +17,7 @@ PROPERTY_REMOVED = "Property '{path}' was removed"
 PROPERTY_UPDATED = "Property '{path}' was updated. From {remove} to {add}"
 
 
-def plain(diff: dict) -> str:
+def plain(diff: list) -> str:
     """
     View style.
 
@@ -22,63 +30,58 @@ def plain(diff: dict) -> str:
     return '\n'.join(ast_walk(diff))
 
 
-def ast_walk(node: dict, path='') -> list:
+def ast_walk(nodes: list, path='') -> list:
     """
     Walk to difference structure tree.
 
     Args:
-        node: difference tree
+        nodes: difference tree
         path: path keys
 
     Returns:
         list:
     """
     output = []
-    for node_key, node_data in sorted(node.items()):
-        if isinstance(node_data, tuple):
-            mark, changes_data = node_data[0]
-            if mark == MARK_IDENTICAL:
-                continue
-            output.append(format_result(node_key, node_data, path))
-        elif isinstance(node_data, dict):
-            output.extend(ast_walk(node_data, add_path(node_key, path)))
+    for node in nodes:
+        if is_children_exist(node):
+            output.extend(ast_walk(
+                node['children'],
+                add_path(node['key'], path),
+            ))
         else:
-            output.append(format_result(node_key, node_data, path))
+            mark = get_state_node(node)
+            if mark != MARK_IDENTICAL:
+                output.append(format_result(node, mark, path))
     return output
 
 
-def format_result(node_key: str, node_data, path: str) -> str:
+def format_result(node: dict, mark: str, path: str) -> str:
     """
     Format result.
 
     Args:
-        node_key: name node key
-        node_data: data by node_key
+        node: name node key
+        mark: special mark
         path: path keys
 
     Returns:
         str:
     """
-    added_value, removed_value = None, None
-    for item_mark in node_data:
-        mark, changes_data = item_mark
-        if mark == MARK_ADD:
-            added_value = changes_data
-        else:
-            removed_value = changes_data
-    if added_value is not None and removed_value is not None:
+    node_key, node_value = get_key(node), get_value(node)
+    changes_path = add_path(node_key, path)
+    if mark == MARK_UPDATE:
         return PROPERTY_UPDATED.format(
-            path=add_path(node_key, path),
-            remove=modify_values(removed_value),
-            add=modify_values(added_value),
+            path=changes_path,
+            remove=modify_values(node_value['remove_value']),
+            add=modify_values(node_value['add_value']),
         )
-    elif added_value is not None:
+    elif mark == MARK_ADD:
         return PROPERTY_ADDED.format(
-            path=add_path(node_key, path),
-            add=modify_values(added_value),
+            path=changes_path,
+            add=modify_values(node_value),
         )
     return PROPERTY_REMOVED.format(
-        path=add_path(node_key, path),
+        path=changes_path,
     )
 
 
@@ -98,21 +101,25 @@ def add_path(node_key: str, current_path: str) -> str:
     return node_key
 
 
-def modify_values(node_data) -> str:
+def modify_values(element) -> str:
     """
     Modify output values.
 
     Args:
-        node_data: data
+        element: value by node
 
     Returns:
         str:
     """
-    if is_complex(node_data):
+    if is_complex(element):
         return COMPLEX_VALUE
-    elif node_data not in OBJECT_IN_JSON and isinstance(node_data, str):
-        return "'{data}'".format(data=node_data)
-    return node_data
+    elif isinstance(element, str):
+        return "'{data}'".format(data=element)
+    elif isinstance(element, bool):
+        return str(element).lower()
+    elif element is None:
+        return 'null'
+    return element
 
 
 def is_complex(node_data) -> bool:

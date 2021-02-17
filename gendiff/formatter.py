@@ -5,19 +5,34 @@ from gendiff.formatters.plain import plain
 from gendiff.formatters.stylish import stylish
 
 
-def formatter(output_format: str):
+def format_diff(diff: list, output_format: str) -> str:
     """
-    Get formatter function.
+    Format difference structure.
 
     Args:
-        output_format: data output format name
+        diff: difference structure
+        output_format: format name
+
+    Returns:
+        str:
+    """
+    formatter = get_formatter(output_format)
+    return formatter(diff)
+
+
+def get_formatter(formatter: str):
+    """
+    Get format function.
+
+    Args:
+        formatter: format name
 
     Returns:
         function:
     """
-    if output_format == 'stylish':
+    if formatter == 'stylish':
         return stylish
-    elif output_format == 'plain':
+    elif formatter == 'plain':
         return plain
-    elif output_format == 'json':
+    elif formatter == 'json':
         return json_formatter

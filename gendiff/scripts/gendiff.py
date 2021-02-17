@@ -8,13 +8,12 @@ from gendiff.cli import get_input_params
 
 def main():
     """Start CLI-program gendiff."""
-    args = get_input_params()
+    first_file, second_file, formatter = get_input_params()
     diff = generate_diff(
-        first_file=args['first_file'],
-        second_file=args['second_file'],
-        output_format=args['format'],
+        first_file=first_file,
+        second_file=second_file,
+        output_format=formatter,
     )
-
     print(diff)
 
 

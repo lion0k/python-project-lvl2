@@ -3,7 +3,7 @@
 from os.path import splitext
 
 from gendiff.diff import build_difference
-from gendiff.formatter import formatter
+from gendiff.formatter import format_diff
 from gendiff.parsers import parse_data
 
 
@@ -22,15 +22,14 @@ def read_file(path_to_file):
     Returns:
         any: data from file
     """
-    try:
-        with open(path_to_file) as file_descriptor:
-            file_data = file_descriptor.read()
-            if not file_data:
-                raise ValueError("'{file}' is empty!".format(file=path_to_file))
-            return file_data
-    except FileNotFoundError:
-        raise FileNotFoundError(
-            "File '{file}' not found!".format(file=path_to_file),
+    with open(path_to_file) as file_descriptor:
+        file_data = file_descriptor.read()
+        if not file_data:
+            raise ValueError("'{file}' is empty!".format(file=path_to_file))
+
+        return parse_data(
+            file_data,
+            get_file_extension(path_to_file),
         )
 
 
@@ -59,14 +58,8 @@ def generate_diff(first_file: str, second_file: str, output_format='stylish'):
     Returns:
         str:
     """
-    old_data = parse_data(
-        read_file(first_file),
-        get_file_extension(first_file),
-    )
-    new_data = parse_data(
-        read_file(second_file),
-        get_file_extension(second_file),
-    )
+    old_data = read_file(first_file)
+    new_data = read_file(second_file)
 
     diff = build_difference(old_data, new_data)
-    return formatter(output_format)(diff)
+    return format_diff(diff, output_format)

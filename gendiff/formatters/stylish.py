@@ -1,18 +1,26 @@
 """Stylish format."""
 
-from gendiff.diff import MARK_ADD, MARK_IDENTICAL, MARK_REMOVE
+from gendiff.diff import (
+    MARK_ADD,
+    MARK_IDENTICAL,
+    MARK_REMOVE,
+    get_key,
+    get_state_node,
+    get_value,
+    is_children_exist,
+)
 
 INDENT = '    '
-INDENT_NOT_CHANGE = '    '
 INDENT_ADD = '  + '
 INDENT_REMOVE = '  - '
 
-MARKS = MARK_ADD, MARK_IDENTICAL, MARK_REMOVE
-INDENTS = INDENT_ADD, INDENT_NOT_CHANGE, INDENT_REMOVE
-MARK_ADD_AND_REMOVE = MARK_ADD, MARK_REMOVE
+QUOTE_IN = '{'
+QUOTE_OUT = '}'
+
+ALL_MARKS_WITHOUT_UPDATE = MARK_ADD, MARK_IDENTICAL, MARK_REMOVE
 
 
-def stylish(diff: dict) -> str:
+def stylish(diff: list) -> str:
     """
     View style.
 
@@ -29,116 +37,181 @@ def stylish(diff: dict) -> str:
     )
 
 
-def set_indents_by_node(mark: str, count_indent: int, is_child: bool) -> tuple:
-    """
-    Set current indent by mark and count indent.
-
-    Args:
-        mark: mark changes
-        count_indent: count deep indents
-        is_child: node having children
-
-    Returns:
-        tuple: count indent, current indent by mark
-    """
-    _, current_indent = list(filter(
-        lambda indent: mark == indent[0],
-        zip(MARKS, INDENTS),
-    ))[0]
-    if mark == MARK_IDENTICAL:
-        if is_child:
-            return count_indent, ''
-        return count_indent, current_indent
-    if is_child:
-        return count_indent + 1, current_indent
-    return count_indent, current_indent
-
-
-def ast_walk(node: dict, deep_indent=0) -> list:
+def ast_walk(nodes: list, deep_indent=1) -> list:
     """
     Walk to difference structure tree.
 
     Args:
-        node: difference tree
+        nodes: difference tree
         deep_indent: count deepness tree
 
     Returns:
         list:
     """
     output = []
-    for node_key, node_data in sorted(node.items()):
-        if isinstance(node_data, tuple):
-            for item_mark in node_data:
-                mark, changes_data = item_mark
-                is_children = isinstance(changes_data, dict)
-                count_indent, current_indent = set_indents_by_node(
-                    mark,
-                    deep_indent,
-                    is_children,
-                )
-                if is_children:
-                    if mark in MARK_ADD_AND_REMOVE:
-                        quote_in = format_result(
-                            count_indent - 1,
-                            '{',
-                            node_key,
-                            current_indent,
-                        )
-                        quote_out = format_result(count_indent, '}')
-                    else:
-                        quote_in = format_result(
-                            count_indent,
-                            '{',
-                            node_key,
-                            current_indent,
-                        )
-                        quote_out = format_result(count_indent + 1, '}')
-                    output.append(quote_in)
-                    output.extend(ast_walk(changes_data, deep_indent + 1))
-                    output.append(quote_out)
-                else:
-                    output.append(format_result(
-                        count_indent,
-                        changes_data,
-                        node_key,
-                        current_indent,
-                    ))
+    indent_body = deep_indent + 1
+    indent_quote = INDENT * deep_indent
+
+    for node in nodes:
+        if is_children_exist(node):
+            output.append(format_result(indent_quote, QUOTE_IN, get_key(node)))
+            output.extend(ast_walk(node['children'], indent_body))
+            output.append(format_result(indent_quote, QUOTE_OUT))
         else:
-            current_indent = deep_indent + 1
+            output.extend(get_value_by_node(
+                node,
+                deep_indent,
+                get_state_node(node),
+            ))
+    return output
+
+
+def get_value_by_node(node: dict, deep_indent: int, mark: str) -> list:
+    """
+    Get value by node.
+
+    Args:
+        node: node
+        deep_indent: count deep indent
+        mark: special mark changes data
+
+    Returns:
+        list:
+    """
+    output = []
+
+    indent_node = INDENT * (deep_indent - 1)
+    indent_body = deep_indent + 1
+    indent_quote_end = INDENT * deep_indent
+    node_key, node_value = get_key(node), get_value(node)
+
+    if mark in ALL_MARKS_WITHOUT_UPDATE:
+        indent_mark = get_indent_by_mark(mark)
+        if isinstance(node_value, dict):
+            output.append(format_result(
+                indent_node,
+                QUOTE_IN,
+                node_key,
+                indent_mark,
+            ))
+            output.extend(format_value(node_value, indent_body))
+            output.append(format_result(indent_quote_end, QUOTE_OUT))
+        else:
+            output.append(format_result(
+                indent_node,
+                convert(node_value),
+                node_key,
+                indent_mark,
+            ))
+    else:
+        remove_data = (INDENT_REMOVE, node_value['remove_value'])
+        add_data = (INDENT_ADD, node_value['add_value'])
+        for indent, node_data in remove_data, add_data:
             if isinstance(node_data, dict):
-                output.append(format_result(current_indent, '{', node_key))
-                output.extend(ast_walk(node_data, current_indent))
-                output.append(format_result(current_indent, '}'))
+                output.append(format_result(
+                    indent_node,
+                    QUOTE_IN,
+                    node_key,
+                    indent,
+                ))
+                output.extend(format_value(node_data, indent_body))
+                output.append(format_result(indent_quote_end, QUOTE_OUT))
             else:
                 output.append(format_result(
-                    current_indent,
-                    node_data,
+                    indent_node,
+                    convert(node_data),
                     node_key,
+                    indent,
                 ))
     return output
 
 
-def format_result(count_indent: int, element, node='', indent_spec='') -> str:
+def format_value(node: dict, deep_indent: int) -> list:
     """
-    Format result.
+    Format value.
 
     Args:
-        count_indent: number of indents
-        element: value by node
-        node: name node key
-        indent_spec: special indent show how data changes
+        node: node
+        deep_indent: count deep indent
+
+    Returns:
+        list:
+    """
+    output = []
+    for node_key, element in node.items():
+        if isinstance(element, dict):
+            output.append(format_result(
+                INDENT * deep_indent,
+                QUOTE_IN,
+                node_key,
+            ))
+            output.extend(format_value(element, deep_indent + 1))
+            output.append(format_result(INDENT * deep_indent, QUOTE_OUT))
+        else:
+            output.append(format_result(
+                INDENT * deep_indent,
+                convert(element),
+                node_key,
+            ))
+    return output
+
+
+def get_indent_by_mark(mark: str) -> str:
+    """
+    Get special indent by mark.
+
+    Args:
+        mark: special mark
 
     Returns:
         str:
     """
-    if node:
-        return '{indent}{indent_spec}{node}: {element}'.format(
-            indent=INDENT * count_indent,
-            indent_spec=indent_spec,
-            node=node,
+    if mark == MARK_IDENTICAL:
+        return INDENT
+    elif mark == MARK_ADD:
+        return INDENT_ADD
+    elif mark == MARK_REMOVE:
+        return INDENT_REMOVE
+
+
+def format_result(indent: str, element, node_key='', indent_mark='') -> str:
+    """
+    Format result.
+
+    Args:
+        indent: indent
+        element: value by node or quote
+        node_key: name key
+        indent_mark: special indent show how data changes
+
+    Returns:
+        str:
+    """
+    if node_key:
+        return '{indent}{indent_mark}{node_key}: {element}'.format(
+            indent=indent,
+            indent_mark=indent_mark,
+            node_key=node_key,
             element=element,
         )
     return '{indent}{element}'.format(
-        indent=INDENT * count_indent,
+        indent=indent,
         element=element,
     )
+
+
+def convert(element):
+    """
+    Convert value.
+
+    Args:
+        element: value
+
+    Returns:
+        any:
+    """
+    if isinstance(element, bool):
+        return str(element).lower()
+    elif element is None:
+        return 'null'
+    return element

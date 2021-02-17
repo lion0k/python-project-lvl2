@@ -13,4 +13,4 @@ def json_formatter(diff: dict) -> str:
     Returns:
         str:
     """
-    return json.dumps(diff, sort_keys=True, indent=4)
+    return json.dumps(diff, indent=4)
