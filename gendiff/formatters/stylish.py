@@ -64,7 +64,7 @@ def ast_walk(nodes: list, deep_indent=1) -> list:
                             node_key,
                             indent,
                         ))
-                        format_node.extend(format_value(node_data, indent_body))
+                        format_node.extend(format_nested(node_data, indent_body))
                         format_node.append(format_result(
                             indent_quote_end,
                             QUOTE_OUT,
@@ -85,7 +85,7 @@ def ast_walk(nodes: list, deep_indent=1) -> list:
                         node_key,
                         indent_mark,
                     ))
-                    format_node.extend(format_value(node_value, indent_body))
+                    format_node.extend(format_nested(node_value, indent_body))
                     format_node.append(format_result(
                         indent_quote_end,
                         QUOTE_OUT,
@@ -101,9 +101,9 @@ def ast_walk(nodes: list, deep_indent=1) -> list:
     return output
 
 
-def format_value(node: dict, deep_indent: int) -> list:
+def format_nested(node: dict, deep_indent: int) -> list:
     """
-    Format value.
+    Format nested value.
 
     Args:
         node: node
@@ -120,7 +120,7 @@ def format_value(node: dict, deep_indent: int) -> list:
                 QUOTE_IN,
                 node_key,
             ))
-            output.extend(format_value(element, deep_indent + 1))
+            output.extend(format_nested(element, deep_indent + 1))
             output.append(format_result(INDENT * deep_indent, QUOTE_OUT))
         else:
             output.append(format_result(
