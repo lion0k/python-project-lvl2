@@ -29,29 +29,28 @@ def ast_walk(nodes: list, path='') -> list:
     """
     output = []
     for node in nodes:
+        changes_path = add_path(node.get('key'), path)
         if 'children' in node:
             output.extend(ast_walk(
                 node.get('children'),
-                add_path(node.get('key'), path),
+                changes_path,
             ))
         else:
             mark = node.get('state')
             if mark != IDENTICAL:
-                node_key, node_value = map(node.get, ('key', 'value'))
-                changes_path = add_path(node_key, path)
                 if mark == UPDATE:
                     output.append(
                         "Property '{path}' was updated. From {remove} to {add}".format(
                             path=changes_path,
-                            remove=modify_values(node_value.get('old_value')),
-                            add=modify_values(node_value.get('new_value')),
+                            remove=modify_values(node.get('old_value')),
+                            add=modify_values(node.get('new_value')),
                         ),
                     )
                 elif mark == ADD:
                     output.append(
                         "Property '{path}' was added with value: {add}".format(
                             path=changes_path,
-                            add=modify_values(node_value),
+                            add=modify_values(node.get('value')),
                         ),
                     )
                 else:

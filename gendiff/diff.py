@@ -50,10 +50,8 @@ def build_difference(old_data, new_data) -> list:
             changes['children'] = build_difference(value_old_data, value_new_data)
         else:
             changes['state'] = UPDATE
-            changes['value'] = {
-                'old_value': value_old_data,
-                'new_value': value_new_data,
-            }
+            changes['old_value'] = value_old_data
+            changes['new_value'] = value_new_data
 
         diff_result.append(changes)
     return diff_result
