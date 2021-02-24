@@ -4,6 +4,7 @@ IDENTICAL = 'identical'
 ADD = 'added'
 REMOVE = 'removed'
 UPDATE = 'updated'
+NESTED = 'nested'
 
 
 def build_difference(old_data, new_data) -> list:
@@ -33,6 +34,7 @@ def build_difference(old_data, new_data) -> list:
             changes['state'] = REMOVE
             changes['value'] = value_old_data
         elif isinstance(value_old_data, dict) and isinstance(value_new_data, dict):
+            changes['state'] = NESTED
             changes['children'] = build_difference(value_old_data, value_new_data)
         else:
             changes['state'] = UPDATE

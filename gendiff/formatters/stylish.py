@@ -1,6 +1,6 @@
 """Stylish format."""
 
-from gendiff.diff import ADD, IDENTICAL, REMOVE, UPDATE
+from gendiff.diff import ADD, IDENTICAL, NESTED, REMOVE, UPDATE
 
 INDENT = '    '
 INDENT_ADD = '  + '
@@ -43,8 +43,8 @@ def ast_walk(nodes: list, deep_indent=1) -> list:
     indent_quote_end = INDENT * deep_indent
 
     for node in nodes:
-        node_key = node.get('key')
-        if 'children' in node:
+        mark, node_key, node_value = map(node.get, ('state', 'key', 'value'))
+        if mark == NESTED:
             output.append(
                 format_result(indent_quote_end, QUOTE_IN, node_key),
             )
@@ -53,7 +53,6 @@ def ast_walk(nodes: list, deep_indent=1) -> list:
         else:
             format_node = []
             indent_node = INDENT * (deep_indent - 1)
-            mark, node_value = node.get('state'), node.get('value')
             if mark == UPDATE:
                 old_data = (INDENT_REMOVE, node.get('old_value'))
                 new_data = (INDENT_ADD, node.get('new_value'))

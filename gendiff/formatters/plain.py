@@ -1,6 +1,6 @@
 """Plain format."""
 
-from gendiff.diff import ADD, IDENTICAL, UPDATE
+from gendiff.diff import ADD, NESTED, REMOVE, UPDATE
 
 
 def format_plain(diff: list) -> str:
@@ -28,35 +28,34 @@ def ast_walk(nodes: list, path='') -> list:
         list:
     """
     output = []
+
     for node in nodes:
         changes_path = add_path(node.get('key'), path)
-        if 'children' in node:
+        mark = node.get('state')
+        if mark == NESTED:
             output.extend(ast_walk(
                 node.get('children'),
                 changes_path,
             ))
-        else:
-            mark = node.get('state')
-            if mark != IDENTICAL:
-                if mark == UPDATE:
-                    output.append(
-                        "Property '{path}' was updated. From {remove} to {add}".format(
-                            path=changes_path,
-                            remove=modify_values(node.get('old_value')),
-                            add=modify_values(node.get('new_value')),
-                        ),
-                    )
-                elif mark == ADD:
-                    output.append(
-                        "Property '{path}' was added with value: {add}".format(
-                            path=changes_path,
-                            add=modify_values(node.get('value')),
-                        ),
-                    )
-                else:
-                    output.append("Property '{path}' was removed".format(
-                        path=changes_path,
-                    ))
+        elif mark == UPDATE:
+            output.append(
+                "Property '{path}' was updated. From {remove} to {add}".format(
+                    path=changes_path,
+                    remove=modify_values(node.get('old_value')),
+                    add=modify_values(node.get('new_value')),
+                ),
+            )
+        elif mark == ADD:
+            output.append(
+                "Property '{path}' was added with value: {add}".format(
+                    path=changes_path,
+                    add=modify_values(node.get('value')),
+                ),
+            )
+        elif mark == REMOVE:
+            output.append("Property '{path}' was removed".format(
+                path=changes_path,
+            ))
     return output
 
 
