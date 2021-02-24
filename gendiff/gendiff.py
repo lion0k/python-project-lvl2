@@ -27,14 +27,16 @@ def read_file(path_to_file):
         if not file_data:
             raise ValueError("'{file}' is empty!".format(file=path_to_file))
 
-        content = parse_data(
+        parse_file_data = parse_data(
             file_data,
             get_file_extension(path_to_file),
         )
-        if not content:
-            raise Exception("'{file}' not supported!".format(file=path_to_file))
+        if not parse_file_data:
+            raise ValueError(
+                "'{file}' is not supported!".format(file=path_to_file),
+            )
 
-        return content
+        return parse_file_data
 
 
 def get_file_extension(file_name: str) -> str:

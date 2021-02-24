@@ -56,12 +56,12 @@ def test_file_is_not_supported():
     """Check get exception file is not supported."""
     file_name = 'empty_file'
     abs_path_to_file = get_file_absolute_path(file_name)
-    with open(abs_path_to_file, 'w') as f:
-        f.write('not json/yaml structure')
+    with open(abs_path_to_file, 'w') as file_descriptor:
+        file_descriptor.write('not json/yaml structure')
 
-    with pytest.raises(Exception) as exc:
+    with pytest.raises(ValueError) as exc:
         read_file(abs_path_to_file)
-        assert str(exc.value) == "'{file}' not supported!".format(
+        assert str(exc.value) == "'{file}' is not supported!".format(
             file=abs_path_to_file,
         )
 
