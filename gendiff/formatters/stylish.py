@@ -1,14 +1,6 @@
 """Stylish format."""
 
-from gendiff.diff import (
-    MARK_ADD,
-    MARK_IDENTICAL,
-    MARK_REMOVE,
-    get_key,
-    get_state_node,
-    get_value,
-    is_children_exist,
-)
+from gendiff.diff import ADD, IDENTICAL, REMOVE
 
 INDENT = '    '
 INDENT_ADD = '  + '
@@ -17,10 +9,10 @@ INDENT_REMOVE = '  - '
 QUOTE_IN = '{'
 QUOTE_OUT = '}'
 
-ALL_MARKS_WITHOUT_UPDATE = MARK_ADD, MARK_IDENTICAL, MARK_REMOVE
+ALL_MARKS_WITHOUT_UPDATE = ADD, IDENTICAL, REMOVE
 
 
-def stylish(diff: list) -> str:
+def format_stylish(diff: list) -> str:
     """
     View style.
 
@@ -53,15 +45,17 @@ def ast_walk(nodes: list, deep_indent=1) -> list:
     indent_quote = INDENT * deep_indent
 
     for node in nodes:
-        if is_children_exist(node):
-            output.append(format_result(indent_quote, QUOTE_IN, get_key(node)))
-            output.extend(ast_walk(node['children'], indent_body))
+        if 'children' in node:
+            output.append(
+                format_result(indent_quote, QUOTE_IN, node.get('key')),
+            )
+            output.extend(ast_walk(node.get('children'), indent_body))
             output.append(format_result(indent_quote, QUOTE_OUT))
         else:
             output.extend(get_value_by_node(
                 node,
                 deep_indent,
-                get_state_node(node),
+                node.get('state'),
             ))
     return output
 
@@ -83,7 +77,7 @@ def get_value_by_node(node: dict, deep_indent: int, mark: str) -> list:
     indent_node = INDENT * (deep_indent - 1)
     indent_body = deep_indent + 1
     indent_quote_end = INDENT * deep_indent
-    node_key, node_value = get_key(node), get_value(node)
+    node_key, node_value = map(node.get, ('key', 'value'))
 
     if mark in ALL_MARKS_WITHOUT_UPDATE:
         indent_mark = get_indent_by_mark(mark)
@@ -104,8 +98,8 @@ def get_value_by_node(node: dict, deep_indent: int, mark: str) -> list:
                 indent_mark,
             ))
     else:
-        remove_data = (INDENT_REMOVE, node_value['remove_value'])
-        add_data = (INDENT_ADD, node_value['add_value'])
+        remove_data = (INDENT_REMOVE, node_value.get('old_value'))
+        add_data = (INDENT_ADD, node_value.get('new_value'))
         for indent, node_data in remove_data, add_data:
             if isinstance(node_data, dict):
                 output.append(format_result(
@@ -166,11 +160,11 @@ def get_indent_by_mark(mark: str) -> str:
     Returns:
         str:
     """
-    if mark == MARK_IDENTICAL:
+    if mark == IDENTICAL:
         return INDENT
-    elif mark == MARK_ADD:
+    elif mark == ADD:
         return INDENT_ADD
-    elif mark == MARK_REMOVE:
+    elif mark == REMOVE:
         return INDENT_REMOVE
 
 

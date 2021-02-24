@@ -1,23 +1,9 @@
 """Plain format."""
 
-from gendiff.diff import (
-    MARK_ADD,
-    MARK_IDENTICAL,
-    MARK_UPDATE,
-    get_key,
-    get_state_node,
-    get_value,
-    is_children_exist,
-)
-
-COMPLEX_VALUE = '[complex value]'
-OBJECT_IN_JSON = ('true', 'false', 'null')
-PROPERTY_ADDED = "Property '{path}' was added with value: {add}"
-PROPERTY_REMOVED = "Property '{path}' was removed"
-PROPERTY_UPDATED = "Property '{path}' was updated. From {remove} to {add}"
+from gendiff.diff import ADD, IDENTICAL, UPDATE
 
 
-def plain(diff: list) -> str:
+def format_plain(diff: list) -> str:
     """
     View style.
 
@@ -43,46 +29,36 @@ def ast_walk(nodes: list, path='') -> list:
     """
     output = []
     for node in nodes:
-        if is_children_exist(node):
+        if 'children' in node:
             output.extend(ast_walk(
-                node['children'],
-                add_path(node['key'], path),
+                node.get('children'),
+                add_path(node.get('key'), path),
             ))
         else:
-            mark = get_state_node(node)
-            if mark != MARK_IDENTICAL:
-                output.append(format_result(node, mark, path))
+            mark = node.get('state')
+            if mark != IDENTICAL:
+                node_key, node_value = map(node.get, ('key', 'value'))
+                changes_path = add_path(node_key, path)
+                if mark == UPDATE:
+                    output.append(
+                        "Property '{path}' was updated. From {remove} to {add}".format(
+                            path=changes_path,
+                            remove=modify_values(node_value.get('old_value')),
+                            add=modify_values(node_value.get('new_value')),
+                        ),
+                    )
+                elif mark == ADD:
+                    output.append(
+                        "Property '{path}' was added with value: {add}".format(
+                            path=changes_path,
+                            add=modify_values(node_value),
+                        ),
+                    )
+                else:
+                    output.append("Property '{path}' was removed".format(
+                        path=changes_path,
+                    ))
     return output
-
-
-def format_result(node: dict, mark: str, path: str) -> str:
-    """
-    Format result.
-
-    Args:
-        node: name node key
-        mark: special mark
-        path: path keys
-
-    Returns:
-        str:
-    """
-    node_key, node_value = get_key(node), get_value(node)
-    changes_path = add_path(node_key, path)
-    if mark == MARK_UPDATE:
-        return PROPERTY_UPDATED.format(
-            path=changes_path,
-            remove=modify_values(node_value['remove_value']),
-            add=modify_values(node_value['add_value']),
-        )
-    elif mark == MARK_ADD:
-        return PROPERTY_ADDED.format(
-            path=changes_path,
-            add=modify_values(node_value),
-        )
-    return PROPERTY_REMOVED.format(
-        path=changes_path,
-    )
 
 
 def add_path(node_key: str, current_path: str) -> str:
@@ -111,8 +87,8 @@ def modify_values(element) -> str:
     Returns:
         str:
     """
-    if is_complex(element):
-        return COMPLEX_VALUE
+    if isinstance(element, dict):
+        return '[complex value]'
     elif isinstance(element, str):
         return "'{data}'".format(data=element)
     elif isinstance(element, bool):
@@ -120,16 +96,3 @@ def modify_values(element) -> str:
     elif element is None:
         return 'null'
     return element
-
-
-def is_complex(node_data) -> bool:
-    """
-    Check node is complex.
-
-    Args:
-        node_data: name node key
-
-    Returns:
-        bool:
-    """
-    return isinstance(node_data, dict)

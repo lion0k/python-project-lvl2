@@ -21,8 +21,8 @@
                 "key": "setting3",
                 "state": "updated",
                 "value": {
-                    "remove_value": true,
-                    "add_value": null
+                    "old_value": true,
+                    "new_value": null
                 }
             },
             {
@@ -47,8 +47,8 @@
                                 "key": "wow",
                                 "state": "updated",
                                 "value": {
-                                    "remove_value": "",
-                                    "add_value": "so much"
+                                    "old_value": "",
+                                    "new_value": "so much"
                                 }
                             }
                         ]
@@ -74,8 +74,8 @@
                 "key": "baz",
                 "state": "updated",
                 "value": {
-                    "remove_value": "bas",
-                    "add_value": "bars"
+                    "old_value": "bas",
+                    "new_value": "bars"
                 }
             },
             {
@@ -87,10 +87,10 @@
                 "key": "nest",
                 "state": "updated",
                 "value": {
-                    "remove_value": {
+                    "old_value": {
                         "key": "value"
                     },
-                    "add_value": "str"
+                    "new_value": "str"
                 }
             }
         ]
