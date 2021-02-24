@@ -39,65 +39,62 @@ def ast_walk(nodes: list, deep_indent=1) -> list:
         list:
     """
     output = []
-    indent_body = deep_indent + 1
-    indent_quote_end = INDENT * deep_indent
+    indent_nested = deep_indent + 1
+    indent_quote = INDENT * deep_indent
+    indent_mark_node = INDENT * (deep_indent - 1)
 
     for node in nodes:
         mark, node_key, node_value = map(node.get, ('state', 'key', 'value'))
         if mark == NESTED:
             output.append(
-                format_result(indent_quote_end, QUOTE_IN, node_key),
+                format_result(indent_quote, QUOTE_IN, node_key),
             )
-            output.extend(ast_walk(node.get('children'), indent_body))
-            output.append(format_result(indent_quote_end, QUOTE_OUT))
-        else:
-            format_node = []
-            indent_node = INDENT * (deep_indent - 1)
-            if mark == UPDATE:
-                old_data = (INDENT_REMOVE, node.get('old_value'))
-                new_data = (INDENT_ADD, node.get('new_value'))
-                for indent, node_data in old_data, new_data:
-                    if isinstance(node_data, dict):
-                        format_node.append(format_result(
-                            indent_node,
-                            QUOTE_IN,
-                            node_key,
-                            indent,
-                        ))
-                        format_node.extend(format_nested(node_data, indent_body))
-                        format_node.append(format_result(
-                            indent_quote_end,
-                            QUOTE_OUT,
-                        ))
-                    else:
-                        format_node.append(format_result(
-                            indent_node,
-                            convert(node_data),
-                            node_key,
-                            indent,
-                        ))
-            else:
-                indent_mark = get_indent_by_mark(mark)
-                if isinstance(node_value, dict):
-                    format_node.append(format_result(
-                        indent_node,
+            output.extend(ast_walk(node.get('children'), indent_nested))
+            output.append(format_result(indent_quote, QUOTE_OUT))
+        elif mark == UPDATE:
+            old_data = (INDENT_REMOVE, node.get('old_value'))
+            new_data = (INDENT_ADD, node.get('new_value'))
+            for indent, node_data in old_data, new_data:
+                if isinstance(node_data, dict):
+                    output.append(format_result(
+                        indent_mark_node,
                         QUOTE_IN,
                         node_key,
-                        indent_mark,
+                        indent,
                     ))
-                    format_node.extend(format_nested(node_value, indent_body))
-                    format_node.append(format_result(
-                        indent_quote_end,
+                    output.extend(format_nested(node_data, indent_nested))
+                    output.append(format_result(
+                        indent_quote,
                         QUOTE_OUT,
                     ))
                 else:
-                    format_node.append(format_result(
-                        indent_node,
-                        convert(node_value),
+                    output.append(format_result(
+                        indent_mark_node,
+                        convert(node_data),
                         node_key,
-                        indent_mark,
+                        indent,
                     ))
-            output.extend(format_node)
+        else:
+            indent_mark = get_indent_by_mark(mark)
+            if isinstance(node_value, dict):
+                output.append(format_result(
+                    indent_mark_node,
+                    QUOTE_IN,
+                    node_key,
+                    indent_mark,
+                ))
+                output.extend(format_nested(node_value, indent_nested))
+                output.append(format_result(
+                    indent_quote,
+                    QUOTE_OUT,
+                ))
+            else:
+                output.append(format_result(
+                    indent_mark_node,
+                    convert(node_value),
+                    node_key,
+                    indent_mark,
+                ))
     return output
 
 
