@@ -52,6 +52,20 @@ def test_file_is_empty():
             )
 
 
+def test_file_is_not_supported():
+    """Check get exception file is not supported."""
+    file_name = 'empty_file'
+    abs_path_to_file = get_file_absolute_path(file_name)
+    with open(abs_path_to_file, 'w') as f:
+        f.write('not json/yaml structure')
+
+    with pytest.raises(Exception) as exc:
+        read_file(abs_path_to_file)
+        assert str(exc.value) == "'{file}' not supported!".format(
+            file=abs_path_to_file,
+        )
+
+
 @pytest.mark.parametrize(
     'before, after, formatter, expected_result', [
         ('file1.json', 'file2.json', 'stylish', 'flat_diff_result'),
