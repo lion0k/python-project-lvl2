@@ -1,13 +1,10 @@
 """Stylish format."""
 
-from gendiff.diff import ADD, IDENTICAL, NESTED, REMOVE, UPDATE
+from gendiff.diff import ADD, IDENTICAL, NESTED, UPDATE
 
 INDENT = '    '
 INDENT_ADD = '  + '
 INDENT_REMOVE = '  - '
-
-QUOTE_IN = '{'
-QUOTE_OUT = '}'
 
 
 def format_stylish(diff: list) -> str:
@@ -20,170 +17,115 @@ def format_stylish(diff: list) -> str:
     Returns:
         str:
     """
-    return '{indent_start}{diff_result}{indent_finish}'.format(
-        indent_start='{\n',
-        diff_result='\n'.join(ast_walk(diff)),
-        indent_finish='\n}',
+    return '{{\n{diff_result}\n}}'.format(
+        diff_result='\n'.join(walk_tree(diff)),
     )
 
 
-def ast_walk(nodes: list, deep_indent=1) -> list:
+def walk_tree(nodes: list, depth=1) -> list:
     """
     Walk to difference structure tree.
 
     Args:
         nodes: difference tree
-        deep_indent: count deepness tree
+        depth: count deepness tree
 
     Returns:
         list:
     """
-    output = []
-    indent_nested = deep_indent + 1
-    indent_quote = INDENT * deep_indent
-    indent_mark_node = INDENT * (deep_indent - 1)
+    result = []
 
     for node in nodes:
-        mark, node_key, node_value = map(node.get, ('state', 'key', 'value'))
-        if mark == NESTED:
-            output.append(
-                format_result(indent_quote, QUOTE_IN, node_key),
-            )
-            output.extend(ast_walk(node.get('children'), indent_nested))
-            output.append(format_result(indent_quote, QUOTE_OUT))
-        elif mark == UPDATE:
-            old_data = (INDENT_REMOVE, node.get('old_value'))
-            new_data = (INDENT_ADD, node.get('new_value'))
-            for indent, node_data in old_data, new_data:
-                if isinstance(node_data, dict):
-                    output.append(format_result(
-                        indent_mark_node,
-                        QUOTE_IN,
-                        node_key,
-                        indent,
-                    ))
-                    output.extend(format_nested(node_data, indent_nested))
-                    output.append(format_result(
-                        indent_quote,
-                        QUOTE_OUT,
-                    ))
-                else:
-                    output.append(format_result(
-                        indent_mark_node,
-                        convert(node_data),
-                        node_key,
-                        indent,
-                    ))
-        else:
-            indent_mark = get_indent_by_mark(mark)
-            if isinstance(node_value, dict):
-                output.append(format_result(
-                    indent_mark_node,
-                    QUOTE_IN,
-                    node_key,
-                    indent_mark,
-                ))
-                output.extend(format_nested(node_value, indent_nested))
-                output.append(format_result(
-                    indent_quote,
-                    QUOTE_OUT,
-                ))
-            else:
-                output.append(format_result(
-                    indent_mark_node,
-                    convert(node_value),
-                    node_key,
-                    indent_mark,
-                ))
-    return output
-
-
-def format_nested(node: dict, deep_indent: int) -> list:
-    """
-    Format nested value.
-
-    Args:
-        node: node
-        deep_indent: count deep indent
-
-    Returns:
-        list:
-    """
-    output = []
-    for node_key, element in node.items():
-        if isinstance(element, dict):
-            output.append(format_result(
-                INDENT * deep_indent,
-                QUOTE_IN,
-                node_key,
+        state, key, value = map(node.get, ('state', 'key', 'value'))
+        if state == NESTED:
+            result.append('{indent}{key}: {{'.format(
+                indent=INDENT * depth,
+                key=key,
             ))
-            output.extend(format_nested(element, deep_indent + 1))
-            output.append(format_result(INDENT * deep_indent, QUOTE_OUT))
-        else:
-            output.append(format_result(
-                INDENT * deep_indent,
-                convert(element),
-                node_key,
+            result.extend(walk_tree(node.get('children'), depth + 1))
+            result.append('{indent}}}'.format(indent=INDENT * depth))
+        elif state == UPDATE:
+            result.extend(format_result(
+                key,
+                node.get('old_value'),
+                depth,
+                INDENT_REMOVE,
             ))
-    return output
+            result.extend(format_result(
+                key,
+                node.get('new_value'),
+                depth,
+                INDENT_ADD,
+            ))
+        elif state == ADD:
+            result.extend(format_result(key, value, depth, INDENT_ADD))
+        elif state == IDENTICAL:
+            result.extend(format_result(key, value, depth, INDENT))
+        else:
+            result.extend(format_result(key, value, depth, INDENT_REMOVE))
+    return result
 
 
-def get_indent_by_mark(mark: str) -> str:
-    """
-    Get special indent by mark.
-
-    Args:
-        mark: special mark
-
-    Returns:
-        str:
-    """
-    if mark == IDENTICAL:
-        return INDENT
-    elif mark == ADD:
-        return INDENT_ADD
-    elif mark == REMOVE:
-        return INDENT_REMOVE
-
-
-def format_result(indent: str, element, node_key='', indent_mark='') -> str:
+def format_result(key, value, depth: int, indent_state=None) -> list:
     """
     Format result.
 
     Args:
-        indent: indent
-        element: value by node or quote
-        node_key: name key
-        indent_mark: special indent show how data changes
+        key: node key
+        value: node value
+        depth: depth
+        indent_state: special indent show how data changes
 
     Returns:
-        str:
+        list:
     """
-    if node_key:
-        return '{indent}{indent_mark}{node_key}: {element}'.format(
-            indent=indent,
-            indent_mark=indent_mark,
-            node_key=node_key,
-            element=element,
-        )
-    return '{indent}{element}'.format(
-        indent=indent,
-        element=element,
-    )
+    result = []
+    if indent_state:
+        if isinstance(value, dict):
+            result.append('{indent}{indent_state}{key}: {{'.format(
+                indent=INDENT * (depth - 1),
+                indent_state=indent_state,
+                key=key,
+            ))
+            result.extend(format_result(key, value, depth + 1))
+            result.append('{indent}}}'.format(indent=INDENT * depth))
+        else:
+            result.append('{indent}{indent_state}{key}: {value}'.format(
+                indent=INDENT * (depth - 1),
+                indent_state=indent_state,
+                key=key,
+                value=replacer(value),
+            ))
+    else:
+        for key_item, element in value.items():
+            if isinstance(element, dict):
+                result.append('{indent}{key}: {{'.format(
+                    indent=INDENT * depth,
+                    key=key_item,
+                ))
+                result.extend(format_result(key_item, element, depth + 1))
+                result.append('{indent}}}'.format(indent=INDENT * depth))
+            else:
+                result.append('{indent}{key}: {element}'.format(
+                    indent=INDENT * depth,
+                    key=key_item,
+                    element=replacer(element),
+                ))
+    return result
 
 
-def convert(element):
+def replacer(value):
     """
-    Convert value.
+    Replace output values.
 
     Args:
-        element: value
+        value: value
 
     Returns:
         any:
     """
-    if isinstance(element, bool):
-        return str(element).lower()
-    elif element is None:
+    if isinstance(value, bool):
+        return str(value).lower()
+    elif value is None:
         return 'null'
-    return element
+    return value

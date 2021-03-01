@@ -13,10 +13,10 @@ def format_plain(diff: list) -> str:
     Returns:
         str:
     """
-    return '\n'.join(ast_walk(diff))
+    return '\n'.join(walk_tree(diff))
 
 
-def ast_walk(nodes: list, path='') -> list:
+def walk_tree(nodes: list, path='') -> list:
     """
     Walk to difference structure tree.
 
@@ -27,70 +27,53 @@ def ast_walk(nodes: list, path='') -> list:
     Returns:
         list:
     """
-    output = []
+    result = []
 
     for node in nodes:
-        changes_path = add_path(node.get('key'), path)
-        mark = node.get('state')
-        if mark == NESTED:
-            output.extend(ast_walk(
+        state = node.get('state')
+        if state == NESTED:
+            result.extend(walk_tree(
                 node.get('children'),
-                changes_path,
+                '{path}{key}.'.format(path=path, key=node.get('key')),
             ))
-        elif mark == UPDATE:
-            output.append(
+        elif state == UPDATE:
+            result.append(
                 "Property '{path}' was updated. From {remove} to {add}".format(
-                    path=changes_path,
-                    remove=modify_values(node.get('old_value')),
-                    add=modify_values(node.get('new_value')),
+                    path='{path}{key}'.format(path=path, key=node.get('key')),
+                    remove=replacer(node.get('old_value')),
+                    add=replacer(node.get('new_value')),
                 ),
             )
-        elif mark == ADD:
-            output.append(
+        elif state == ADD:
+            result.append(
                 "Property '{path}' was added with value: {add}".format(
-                    path=changes_path,
-                    add=modify_values(node.get('value')),
+                    path='{path}{key}'.format(path=path, key=node.get('key')),
+                    add=replacer(node.get('value')),
                 ),
             )
-        elif mark == REMOVE:
-            output.append("Property '{path}' was removed".format(
-                path=changes_path,
+        elif state == REMOVE:
+            result.append("Property '{path}' was removed".format(
+                path='{path}{key}'.format(path=path, key=node.get('key')),
             ))
-    return output
+    return result
 
 
-def add_path(node_key: str, current_path: str) -> str:
+def replacer(value) -> str:
     """
-    Add key in path keys.
+    Replace output values.
 
     Args:
-        node_key: name node key
-        current_path: current path keys
+        value: value by node
 
     Returns:
         str:
     """
-    if current_path:
-        return '{path}.{key}'.format(path=current_path, key=node_key)
-    return node_key
-
-
-def modify_values(element) -> str:
-    """
-    Modify output values.
-
-    Args:
-        element: value by node
-
-    Returns:
-        str:
-    """
-    if isinstance(element, dict):
+    if isinstance(value, dict):
         return '[complex value]'
-    elif isinstance(element, str):
-        return "'{data}'".format(data=element)
-    elif isinstance(element, bool):
-        return str(element).lower()
-    elif element is None:
+    if isinstance(value, str):
+        return "'{value}'".format(value=value)
+    if isinstance(value, bool):
+        return str(value).lower()
+    if value is None:
         return 'null'
-    return element
+    return value

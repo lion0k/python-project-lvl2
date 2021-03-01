@@ -15,9 +15,8 @@ def read_file(path_to_file):
         path_to_file: path to file
 
     Raises:
-        ValueError: then file is empty
+        ValueError: then file is empty or not supported
         FileNotFoundError: file not found
-        IOError: can`t read the file
 
     Returns:
         any: data from file
