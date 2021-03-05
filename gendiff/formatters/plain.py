@@ -40,15 +40,15 @@ def walk_tree(nodes: list, path='') -> list:
             result.append(
                 "Property '{path}' was updated. From {remove} to {add}".format(
                     path='{path}{key}'.format(path=path, key=node.get('key')),
-                    remove=replacer(node.get('old_value')),
-                    add=replacer(node.get('new_value')),
+                    remove=stringify(node.get('old_value')),
+                    add=stringify(node.get('new_value')),
                 ),
             )
         elif state == ADD:
             result.append(
                 "Property '{path}' was added with value: {add}".format(
                     path='{path}{key}'.format(path=path, key=node.get('key')),
-                    add=replacer(node.get('value')),
+                    add=stringify(node.get('value')),
                 ),
             )
         elif state == REMOVE:
@@ -58,9 +58,9 @@ def walk_tree(nodes: list, path='') -> list:
     return result
 
 
-def replacer(value) -> str:
+def stringify(value) -> str:
     """
-    Replace output values.
+    Output of string values.
 
     Args:
         value: value by node
