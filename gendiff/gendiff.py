@@ -1,4 +1,4 @@
-"""Generate difference."""
+"""Difference generator."""
 
 from os.path import splitext
 
@@ -48,7 +48,7 @@ def get_file_extension(file_name: str) -> str:
     Returns:
         str:
     """
-    return splitext(file_name)[1][1:]
+    return splitext(file_name)[1][1:].lower()
 
 
 def generate_diff(first_file: str, second_file: str, output_format='stylish'):

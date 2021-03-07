@@ -9,7 +9,7 @@ INDENT_REMOVE = '  - '
 
 def format_stylish(diff: list) -> str:
     """
-    View style.
+    Format to ‘stylish’ style.
 
     Args:
         diff: difference structure
@@ -24,7 +24,7 @@ def format_stylish(diff: list) -> str:
 
 def walk_tree(nodes: list, depth=1) -> list:
     """
-    Walk to difference structure tree.
+    Traverses diff tree and prepares a list of lines for output.
 
     Args:
         nodes: difference tree
@@ -81,7 +81,7 @@ def walk_tree(nodes: list, depth=1) -> list:
 
 def stringify(value, depth: int, key=None):
     """
-    Output of string values.
+    Prepare string representation of value.
 
     Args:
         value: value

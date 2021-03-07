@@ -5,7 +5,7 @@ from gendiff.diff import ADD, NESTED, REMOVE, UPDATE
 
 def format_plain(diff: list) -> str:
     """
-    View style.
+    Format to ‘plain’ style.
 
     Args:
         diff: difference structure
@@ -18,7 +18,7 @@ def format_plain(diff: list) -> str:
 
 def walk_tree(nodes: list, path='') -> list:
     """
-    Walk to difference structure tree.
+    Traverses diff tree and prepares a list of lines for output.
 
     Args:
         nodes: difference tree
@@ -60,7 +60,7 @@ def walk_tree(nodes: list, path='') -> list:
 
 def stringify(value) -> str:
     """
-    Output of string values.
+    Prepare string representation of value.
 
     Args:
         value: value by node

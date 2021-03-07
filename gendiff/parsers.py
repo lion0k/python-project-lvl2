@@ -1,4 +1,4 @@
-"""Parsing data."""
+"""Data parser."""
 
 import json
 
@@ -20,5 +20,5 @@ def parse_data(stream, parser: str) -> dict:
     """
     if parser == 'json':
         return json.loads(stream)
-    elif parser in YAML_EXTENSION:
+    if parser in YAML_EXTENSION:
         return yaml.safe_load(stream)

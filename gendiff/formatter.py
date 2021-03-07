@@ -1,4 +1,4 @@
-"""Choose formatter."""
+"""Formatter interface."""
 
 from gendiff.formatters.json import format_json
 from gendiff.formatters.plain import format_plain
@@ -18,7 +18,7 @@ def format_diff(diff: list, output_format: str) -> str:
     """
     if output_format == 'stylish':
         return format_stylish(diff)
-    elif output_format == 'plain':
+    if output_format == 'plain':
         return format_plain(diff)
-    elif output_format == 'json':
+    if output_format == 'json':
         return format_json(diff)

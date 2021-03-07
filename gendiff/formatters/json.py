@@ -1,11 +1,11 @@
-"""Json format."""
+"""JSON format."""
 
 import json
 
 
 def format_json(diff: list) -> str:
     """
-    View style.
+    Format to JSON.
 
     Args:
         diff: difference structure
