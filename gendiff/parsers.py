@@ -7,18 +7,18 @@ import yaml
 YAML_EXTENSION = 'yml', 'yaml'
 
 
-def parse_data(stream, parser: str) -> dict:
+def parse_data(stream, format_parse: str) -> dict:
     """
     Parse data.
 
     Args:
         stream: data
-        parser: type of parser
+        format_parse: type of parser
 
     Returns:
         dict:
     """
-    if parser == 'json':
+    if format_parse == 'json':
         return json.loads(stream)
-    if parser in YAML_EXTENSION:
+    if format_parse in YAML_EXTENSION:
         return yaml.safe_load(stream)
